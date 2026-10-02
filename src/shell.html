@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>La seduta storta</title>
+<meta name="description" content="Una seduta spiritica truccata. Uno di voi è lo Spirito.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Seduta storta">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#EEE9EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#2A1018" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=Alegreya+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEE9EF; --glow:#FFF7EA; --ink:#2A1A26; --ink-2:#544454; --muted:#776877;
+  --card:#FBF8FB; --edge:#2A1A26; --primary:#7C1D2C; --on-primary:#FBF3F0;
+  --brass:#8A6A22; --spirit:#3E6FB0; --danger:#9B1F2E; --track:#DDD4DF; --focus:#3E6FB0;
+  --display:"IM Fell English",Garamond,"Times New Roman",serif;
+  --text:"Alegreya Sans","Avenir Next","Segoe UI",system-ui,-apple-system,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#2A1018; --glow:#4C2029; --ink:#F3E7D0; --ink-2:#E2D1B6; --muted:#BFA392;
+    --card:#381720; --edge:#D4AF5E; --primary:#D4AF5E; --on-primary:#2A1018;
+    --brass:#D4AF5E; --spirit:#8FB7E8; --danger:#F07A6E; --track:#4A232C; --focus:#8FB7E8;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#2A1018; --glow:#4C2029; --ink:#F3E7D0; --ink-2:#E2D1B6; --muted:#BFA392;
+  --card:#381720; --edge:#D4AF5E; --primary:#D4AF5E; --on-primary:#2A1018;
+  --brass:#D4AF5E; --spirit:#8FB7E8; --danger:#F07A6E; --track:#4A232C; --focus:#8FB7E8;
+  color-scheme:dark;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+[hidden]{display:none !important}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);background:var(--paper)}
+body{margin:0;height:100%;background:var(--paper);color:var(--ink);font-family:var(--text);font-size:18px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;-webkit-text-size-adjust:100%;overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{margin:0;font-weight:400;line-height:1.1}
+p{margin:0}
+button{font:inherit;color:inherit}
+#app{position:relative;height:100%;max-width:640px;margin:0 auto;overflow:hidden}
+
+.screen{position:absolute;inset:0;display:none;flex-direction:column;gap:14px;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:16px max(20px,env(safe-area-inset-right,0px)) 18px max(20px,env(safe-area-inset-left,0px));
+  background:radial-gradient(ellipse 80% 42% at 50% 18%,var(--glow) 0%,rgba(0,0,0,0) 72%),var(--paper)}
+.screen.active{display:flex;animation:fade .35s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.push{margin-top:auto}
+.center{text-align:center}
+
+/* pulsanti */
+.btn{appearance:none;-webkit-appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:52px;
+  padding:10px 18px;border:1.5px solid var(--edge);border-radius:10px;background:transparent;color:var(--ink);
+  font-weight:700;font-size:17px;line-height:1.15;text-align:center;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none}
+.btn:active{transform:scale(.98)}
+.btn:focus-visible,.opt:focus-visible,.seg [role=radio]:focus-visible,.switch:focus-visible,.key:focus-visible,.x:focus-visible{outline:3px solid var(--focus);outline-offset:3px}
+.btn.primary{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.btn.big{font-family:var(--display);font-weight:400;font-size:25px;min-height:62px}
+.btn.plain{border-color:transparent;text-decoration:underline;text-underline-offset:4px;min-height:44px;font-weight:600;color:var(--ink-2)}
+.btn[disabled]{opacity:.45;cursor:default;transform:none}
+.btn.wide{width:100%}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stack{display:grid;gap:10px}
+.note{font-size:16px;color:var(--muted)}
+
+/* cartoncino listato: il bordo doppio dei biglietti dell'Ottocento */
+.card{position:relative;background:var(--card);border:1.5px solid var(--edge);border-radius:6px;padding:20px 20px 22px}
+.card::after{content:"";position:absolute;inset:5px;border:1px solid var(--edge);border-radius:3px;opacity:.55;pointer-events:none}
+
+/* home */
+#s-home{text-align:center;justify-content:space-between}
+.candle-wrap{position:relative;flex:1 1 auto;min-height:190px;max-height:340px}
+.candle-wrap canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.title{font-family:var(--display);font-size:clamp(52px,16vw,88px);line-height:.95;letter-spacing:-.01em}
+#home-title{font-size:clamp(38px,11vw,68px);text-wrap:balance}
+.lead{max-width:28ch;margin:10px auto 0;font-size:20px;color:var(--ink-2);text-wrap:balance}
+.home-actions{display:grid;gap:10px}
+
+/* barre, preparazione */
+.bar{display:flex;align-items:center;gap:12px}
+.bar h2{font-family:var(--display);font-size:30px}
+.block{display:grid;gap:10px}
+.block h3{font-family:var(--display);font-size:23px}
+.add{display:flex;gap:10px}
+.field{flex:1;min-width:0;height:52px;padding:0 14px;border:1.5px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font:inherit;font-size:18px}
+.field::placeholder{color:var(--muted)}
+.field:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.plist{list-style:none;margin:0;padding:0;display:grid;gap:6px;counter-reset:seat}
+.plist:empty{display:none}
+.plist li{display:flex;align-items:center;gap:10px;padding:4px 4px 4px 14px;border:1.5px solid var(--edge);border-radius:10px;background:var(--card);font-weight:700;counter-increment:seat}
+.plist li::before{content:counter(seat);font-family:var(--display);font-weight:400;color:var(--muted);min-width:1.1em}
+.plist li span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.x{appearance:none;width:40px;height:40px;border:0;border-radius:8px;background:transparent;color:var(--ink);font-size:24px;line-height:1;cursor:pointer}
+.levels{display:grid;gap:8px}
+.opt{appearance:none;display:grid;gap:2px;text-align:left;padding:12px 14px;border:1.5px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);cursor:pointer}
+.opt b{font-family:var(--display);font-weight:400;font-size:22px}
+.opt span{font-size:16px;color:var(--ink-2)}
+.opt[aria-checked="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.opt[aria-checked="true"] span{color:var(--on-primary)}
+.seg{display:flex;gap:8px}
+.seg [role=radio]{appearance:none;flex:1;min-height:52px;padding:6px 4px;border:1.5px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font-weight:700;font-size:16px;line-height:1.2;cursor:pointer}
+.seg [role=radio] small{display:block;font-weight:500;font-size:13px;color:var(--muted)}
+.seg [aria-checked="true"]{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.seg [aria-checked="true"] small{color:var(--on-primary)}
+.switch{appearance:none;display:flex;align-items:center;justify-content:space-between;gap:14px;width:100%;padding:12px 14px;border:1.5px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);text-align:left;cursor:pointer}
+.switch span{display:grid;gap:2px}
+.switch b{font-size:18px}
+.switch small{font-size:15px;color:var(--ink-2)}
+.switch i{flex:none;position:relative;width:52px;height:30px;border-radius:999px;border:1.5px solid var(--edge);background:var(--track)}
+.switch i::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:var(--edge);transition:transform .15s}
+.switch[aria-checked="true"] i{background:var(--primary)}
+.switch[aria-checked="true"] i::after{transform:translateX(22px);background:var(--on-primary)}
+.cta{position:sticky;bottom:-18px;margin:auto -20px -18px;padding:14px 20px 18px;background:linear-gradient(to bottom,rgba(0,0,0,0),var(--paper) 28%)}
+
+/* regole e lettere */
+.rules{display:grid;gap:10px;max-width:36em}
+.rules h3{font-family:var(--display);font-size:24px;margin-top:12px}
+.rules p{color:var(--ink-2)}
+.rules .intro{font-size:20px;color:var(--ink)}
+.board-figure{width:100%;max-width:360px;margin:6px auto;display:block}
+.tile-list{display:flex;flex-wrap:wrap;gap:6px}
+.tile-list span{min-width:38px;height:38px;padding:0 8px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--edge);border-radius:4px;font-family:var(--display);font-size:20px;background:var(--card)}
+
+/* ruoli segreti */
+#s-pass,#s-role{text-align:center;justify-content:center}
+.pass-name{font-family:var(--display);font-size:clamp(46px,15vw,84px);line-height:1;overflow-wrap:anywhere}
+.pass-sub{font-size:20px;color:var(--ink-2);max-width:28ch;margin:0 auto}
+.role-card{display:grid;gap:14px;text-align:center;min-height:360px;align-content:center}
+.role-title{font-family:var(--display);font-size:clamp(38px,12vw,56px);line-height:1}
+.role-word{display:grid;gap:4px;padding:14px 10px;border-top:1px solid var(--edge);border-bottom:1px solid var(--edge)}
+.role-word small{font-size:15px;color:var(--muted)}
+.role-word strong{font-family:var(--display);font-weight:400;font-size:clamp(34px,11vw,52px);letter-spacing:.12em;line-height:1.1;overflow-wrap:anywhere}
+.role-word em{font-family:var(--display);font-size:24px;color:var(--ink-2)}
+.need{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px}
+.need span{min-width:34px;height:40px;padding:0 6px;display:grid;place-items:center;border:1.5px solid var(--edge);border-radius:6px;font-family:var(--display);font-size:22px}
+.need .got{opacity:.38}
+.need .gift{color:var(--spirit);border-color:var(--spirit)}
+.need .miss{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.role-left{font-family:var(--text);font-size:16px;line-height:1.35;color:var(--ink-2);text-align:center;margin-top:6px}
+.role-text{color:var(--ink-2);font-size:18px;text-wrap:pretty}
+
+/* seduta */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px}
+.top-info{display:grid;gap:0}
+.top-info b{font-family:var(--display);font-weight:400;font-size:24px;line-height:1.1}
+.top-info span{font-size:15px;color:var(--muted);font-weight:600}
+.mini-candle{flex:none;width:44px;height:58px}
+.qcard{display:grid;gap:14px;text-align:center;padding:26px 22px 24px;margin:auto 0}
+.medium{font-size:16px;color:var(--muted);font-weight:600}
+.medium b{color:var(--ink);font-weight:800}
+.qtext{font-family:var(--display);font-size:clamp(26px,7.4vw,34px);line-height:1.2;text-wrap:balance}
+.qtext strong{font-weight:400;font-style:italic;color:var(--primary)}
+.qtype{font-size:16px;color:var(--ink-2);font-style:italic}
+.slate{min-height:74px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:4px 10px;padding:10px 12px;border:1.5px solid var(--edge);border-radius:6px;background:var(--card);font-family:var(--display);font-size:32px;line-height:1.1}
+.slate .empty{font-family:var(--text);font-size:16px;color:var(--muted)}
+.slate .tok.last{color:var(--primary)}
+.keys{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.keys.words{grid-template-columns:repeat(3,1fr)}
+.keys.nums{grid-template-columns:repeat(10,1fr);gap:4px}
+.key{appearance:none;overflow:hidden;min-height:clamp(46px,6.6vh,60px);border:1.5px solid var(--edge);border-radius:6px;background:var(--card);color:var(--ink);font-family:var(--display);font-size:25px;line-height:1;cursor:pointer;touch-action:manipulation;padding:0}
+.keys.words .key{font-size:22px;min-height:46px}
+.keys.nums .key{font-family:var(--text);font-weight:700;font-size:19px;min-height:44px}
+.key.hit{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.key.seen{border-width:2.5px}
+.answer-actions{display:grid;grid-template-columns:1fr 2fr;gap:10px}
+
+/* il responso */
+#s-omen,#s-reveal{text-align:center}
+#s-omen .candle-wrap,#s-reveal .candle-wrap{min-height:200px}
+.omen-head{font-family:var(--display);font-size:clamp(32px,9vw,44px);line-height:1.1;text-wrap:balance}
+.omen-text{font-size:20px;color:var(--ink-2);max-width:30ch;margin:0 auto;text-wrap:balance}
+.omen-answer{font-family:var(--display);font-size:28px;letter-spacing:.08em;color:var(--ink)}
+.spirit-line{color:var(--spirit)}
+.wait{opacity:.55}
+
+/* esorcismo */
+#s-exo{text-align:center}
+.count{font-family:var(--display);font-size:clamp(90px,34vw,170px);line-height:1;min-height:1.1em}
+.pick{display:grid;gap:8px}
+.pick .btn{font-family:var(--display);font-weight:400;font-size:24px;min-height:56px}
+.pick .btn.out{opacity:.4;text-decoration:line-through}
+
+/* fine */
+#s-end{text-align:center}
+.end-title{font-family:var(--display);font-size:clamp(40px,12vw,64px);line-height:1;padding-top:8px;text-wrap:balance}
+.end-sub{font-size:20px;color:var(--ink-2);text-wrap:balance}
+.word-reveal{display:flex;justify-content:center;flex-wrap:nowrap;gap:6px}
+.word-reveal span{width:42px;height:50px;display:inline-flex;align-items:center;justify-content:center;border:1.5px solid var(--edge);border-radius:4px;font-family:var(--display);font-size:28px;background:var(--card)}
+.word-reveal span.on{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.word-reveal span.gift{background:var(--spirit);color:#fff;border-color:var(--spirit)}
+.legend{font-size:15px;color:var(--muted)}
+.log{list-style:none;margin:0;padding:0;display:grid;gap:10px;text-align:left}
+.log li{padding:10px 0;border-bottom:1px solid var(--track)}
+.log q{display:block;quotes:none;font-family:var(--display);font-size:19px;line-height:1.25}
+.log span{display:block;margin-top:2px;color:var(--ink-2);font-weight:600}
+.log .ev{color:var(--primary);font-style:italic}
+
+/* sovrapposizioni */
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:40;max-width:min(92vw,460px);
+  padding:12px 16px;border:1.5px solid var(--edge);border-radius:10px;background:var(--card);color:var(--ink);font-weight:700;
+  opacity:0;transform:translate(-50%,14px);pointer-events:none;transition:opacity .2s,transform .2s}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (orientation: landscape) and (max-height: 560px){
+  .candle-wrap{min-height:120px}
+  #s-home .candle-wrap{display:none}
+  .role-card{min-height:0}
+}
+@media (prefers-reduced-motion: reduce){
+  .screen.active{animation:none}
+  .switch i::after,.toast{transition:none}
+}
+</style>
+</head>
+<body>
+<main id="app">
+
+  <section class="screen active" id="s-home" aria-labelledby="home-title">
+    <div class="candle-wrap" id="home-candle"><canvas id="cv-home" aria-hidden="true"></canvas></div>
+    <div>
+      <h1 class="title" id="home-title">La seduta storta</h1>
+      <p class="lead">Una seduta spiritica truccata. Uno di voi è lo Spirito.</p>
+    </div>
+    <div class="home-actions">
+      <button class="btn primary big wide" data-go="setup" type="button">Nuova seduta</button>
+      <div class="two">
+        <button class="btn" data-go="rules" type="button">Come si gioca</button>
+        <button class="btn" data-go="board" type="button">Le lettere</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="s-setup" aria-labelledby="setup-title">
+    <header class="bar"><button class="btn" data-go="home" type="button">Indietro</button><h2 id="setup-title">Nuova seduta</h2></header>
+    <div class="block">
+      <h3>Chi siede al tavolo</h3>
+      <p class="note">Scrivete i nomi nell’ordine in cui siete seduti: il turno di chi fa le domande gira così.</p>
+      <div class="add">
+        <input class="field" id="name-in" type="text" maxlength="16" placeholder="Scrivi un nome" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done" aria-label="Nome di chi gioca">
+        <button class="btn" id="add-btn" type="button">Aggiungi</button>
+      </div>
+      <ol class="plist" id="plist" aria-live="polite"></ol>
+      <p class="note" id="pnote"></p>
+    </div>
+    <div class="block">
+      <h3 id="lv-h">Livello delle domande</h3>
+      <div class="levels" id="levels" role="radiogroup" aria-labelledby="lv-h">
+        <button class="opt" type="button" role="radio" data-val="soft"><b>Soft</b><span>Curiosità e dispetti innocenti: va bene con tutti.</span></button>
+        <button class="opt" type="button" role="radio" data-val="ironico"><b>Ironico</b><span>Per adulti: vizi, bugie e scheletri nell’armadio.</span></button>
+        <button class="opt" type="button" role="radio" data-val="piccante"><b>Piccante</b><span>Cotte, baci e segreti di cuore. Solo se tutto il gruppo è d’accordo.</span></button>
+      </div>
+    </div>
+    <div class="block">
+      <h3 id="du-h">Durata della seduta</h3>
+      <div class="seg" id="length" role="radiogroup" aria-labelledby="du-h">
+        <button type="button" role="radio" data-val="8">Breve<small>8 domande</small></button>
+        <button type="button" role="radio" data-val="12">Normale<small>12 domande</small></button>
+        <button type="button" role="radio" data-val="16">Lunga<small>16 domande</small></button>
+      </div>
+    </div>
+    <div class="block">
+      <button class="switch" type="button" role="switch" data-key="sound"><span><b>Suoni</b><small>Brusio della seduta, sussurri e rintocchi.</small></span><i aria-hidden="true"></i></button>
+    </div>
+    <div class="cta"><button class="btn primary big wide" id="start-btn" type="button">Distribuisci i ruoli</button></div>
+  </section>
+
+  <section class="screen" id="s-rules" aria-labelledby="rules-title">
+    <header class="bar"><button class="btn" data-go="home" type="button">Indietro</button><h2 id="rules-title">Come si gioca</h2></header>
+    <article class="rules">
+      <p class="intro">Una seduta spiritica come quelle di una volta: lettere in cerchio, un bicchierino capovolto, un dito a testa e luci basse. Solo che il bicchiere lo muove davvero uno di voi, e lo fa apposta.</p>
+      <h3>Cosa serve</h3>
+      <p>Da 4 a 8 persone, un bicchierino da liquore capovolto (va bene anche una tazzina), le lettere disposte in cerchio sul tavolo e questo telefono. Le lettere si stampano oppure si scrivono a mano su foglietti: trovate tutto in «Le lettere».</p>
+      <h3>Lo Spirito</h3>
+      <p>All’inizio il telefono passa di mano in mano e ognuno scopre in segreto il proprio ruolo. Uno di voi è lo Spirito e riceve una parola maledetta. Vince se, risposta dopo risposta, il bicchiere tocca ogni lettera diversa di quella parola, una volta sola e in qualsiasi ordine. Le doppie non si ripetono. Tutti gli altri sono i vivi.</p>
+      <h3>La seduta</h3>
+      <p>A ogni domanda il telefono sceglie un Medium, a giro. Il telefono sta piatto in mezzo al tavolo, schermo in su: tutti devono vedere le lettere che vengono segnate. Il Medium legge la domanda ad alta voce, tutti tengono un dito sul bicchiere e il bicchiere risponde. Mentre si muove, tutti leggono le lettere ad alta voce e il Medium le tocca sul telefono.</p>
+      <p>Tutti possono spingere: è il bello del gioco. Nessuno sa mai chi sta guidando davvero. Chi non spinge mai è sospetto quanto chi spinge troppo.</p>
+      <h3>La presenza</h3>
+      <p>Dopo ogni risposta il telefono dice quanto è forte la presenza. Più cresce, più lo Spirito è vicino a completare la sua parola. Quando la fiamma diventa blu, gli manca pochissimo.</p>
+      <h3>L’esorcismo</h3>
+      <p>Dopo ogni risposta potete tentare un esorcismo. Al tre, tutti indicano chi credono sia lo Spirito e il più indicato viene accusato. Se è lui, vincono i vivi. Se sbagliate, l’accusato toglie il dito dal bicchiere e lo Spirito si prende una lettera della sua parola in regalo. Quale, lo vede solo lui, quando riguarda il proprio ruolo.</p>
+      <h3>Addio e l’alba</h3>
+      <p>Se il bicchiere arriva su «Addio», la seduta si chiude subito: si fa l’ultimo esorcismo, anche se restano domande. Lo stesso succede all’ultima domanda, quando sorge il sole. Se indovinate vincono i vivi, altrimenti lo Spirito.</p>
+      <h3>I livelli</h3>
+      <p>Soft va bene con tutti. Ironico è per adulti che amano prendersi in giro. Piccante parla di cotte e di baci: sceglietelo solo se tutto il gruppo è d’accordo. Il Medium può sempre cambiare una domanda.</p>
+    </article>
+    <div class="cta"><button class="btn primary big wide" data-go="setup" type="button">Nuova seduta</button></div>
+  </section>
+
+  <section class="screen" id="s-board" aria-labelledby="board-title">
+    <header class="bar"><button class="btn" data-go="home" type="button">Indietro</button><h2 id="board-title">Le lettere</h2></header>
+    <div class="rules">
+      <p class="intro">Il bicchiere ha bisogno di un cerchio di lettere sul tavolo, largo almeno 60 centimetri.</p>
+      <p id="pdf-line">Potete stampare le tessere già pronte, oppure scriverle a mano su foglietti o su post-it. Servono queste:</p>
+      <div class="tile-list" id="tile-list"></div>
+      <svg class="board-figure" viewBox="0 0 320 320" role="img" aria-label="Le lettere disposte in cerchio, con sì e no in alto, i numeri in basso e l’inizio al centro" id="board-svg"></svg>
+      <h3>Come disporle</h3>
+      <p>Le lettere in un grande cerchio, in ordine. «Sì» e «No» in alto, i numeri in basso, «Addio» accanto ai numeri. Se il bicchiere tocca «Addio», la seduta finisce. Al centro la tessera «Inizio»: il bicchiere parte da lì e ci torna dopo ogni risposta.</p>
+      <p>Mettete il bicchierino capovolto su «Inizio» e appoggiate tutti un dito sul fondo, leggeri.</p>
+    </div>
+  </section>
+
+  <section class="screen" id="s-pass" aria-labelledby="pass-name">
+    <p class="pass-sub" id="pass-intro">Passate il telefono a</p>
+    <h2 class="pass-name" id="pass-name"></h2>
+    <p class="pass-sub" id="pass-hint">Solo tu devi guardare lo schermo.</p>
+    <div class="pick" id="pass-pick" hidden></div>
+    <div class="stack push">
+      <button class="btn primary big wide" id="pass-show" type="button">Sono io: mostra il ruolo</button>
+      <button class="btn plain" id="pass-back" type="button" hidden>Torna alla seduta</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s-role" aria-labelledby="role-title">
+    <div class="card role-card">
+      <h2 class="role-title" id="role-title"></h2>
+      <div class="role-word" id="role-word"></div>
+      <p class="role-text" id="role-text"></p>
+    </div>
+    <button class="btn primary big wide push" id="role-hide" type="button">Nascondi e passa il telefono</button>
+  </section>
+
+  <section class="screen" id="s-prep" aria-labelledby="prep-title">
+    <div class="candle-wrap" id="prep-candle"><canvas id="cv-prep" aria-hidden="true"></canvas></div>
+    <h2 class="title center" id="prep-title" style="font-size:clamp(40px,11vw,60px)">Preparate la seduta</h2>
+    <div class="rules">
+      <p>Abbassate le luci. Disponete le lettere in cerchio e mettete il bicchierino capovolto su «Inizio». Il telefono resta piatto in mezzo al tavolo, schermo in su.</p>
+      <p>Ognuno appoggia un dito sul fondo del bicchiere. Da adesso nessuno lo toglie, se non per un esorcismo.</p>
+    </div>
+    <div class="stack push">
+      <button class="btn primary big wide" id="prep-go" type="button">Evoca lo Spirito</button>
+      <button class="btn plain" id="prep-peek" type="button">Rivedi il tuo ruolo</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s-ask" aria-labelledby="ask-q">
+    <header class="top">
+      <div class="top-info"><b id="ask-count"></b><span id="ask-fingers"></span></div>
+      <canvas class="mini-candle" id="cv-mini-ask" aria-hidden="true"></canvas>
+    </header>
+    <div class="card qcard">
+      <p class="medium" id="ask-medium"></p>
+      <p class="qtext" id="ask-q"></p>
+      <p class="qtype" id="ask-type"></p>
+    </div>
+    <div class="stack">
+      <button class="btn primary big wide" id="ask-go" type="button">Il bicchiere si muove</button>
+      <div class="two">
+        <button class="btn" id="ask-change" type="button">Cambia domanda</button>
+        <button class="btn" id="ask-peek" type="button">Rivedi il ruolo</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="s-answer" aria-labelledby="ans-title">
+    <header class="top">
+      <div class="top-info"><b id="ans-title">La risposta</b><span id="ans-sub">Toccate ogni lettera che il bicchiere raggiunge.</span></div>
+      <canvas class="mini-candle" id="cv-mini-ans" aria-hidden="true"></canvas>
+    </header>
+    <div class="slate" id="slate" aria-live="polite"></div>
+    <div class="keys" id="keys-letters"></div>
+    <div class="keys words" id="keys-words"></div>
+    <div class="keys nums" id="keys-nums"></div>
+    <div class="answer-actions push">
+      <button class="btn" id="ans-undo" type="button">Cancella</button>
+      <button class="btn primary big" id="ans-done" type="button">Fine risposta</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s-omen" aria-live="polite">
+    <div class="candle-wrap" id="omen-candle"><canvas id="cv-omen" aria-hidden="true"></canvas></div>
+    <p class="omen-answer" id="omen-answer"></p>
+    <h2 class="omen-head" id="omen-head"></h2>
+    <p class="omen-text" id="omen-text"></p>
+    <div class="stack push" id="omen-actions">
+      <button class="btn primary big wide" id="omen-exo" type="button">Tentate un esorcismo</button>
+      <button class="btn wide" id="omen-next" type="button">Prossima domanda</button>
+    </div>
+  </section>
+
+  <section class="screen" id="s-exo" aria-labelledby="exo-title">
+    <h2 class="omen-head" id="exo-title">Esorcismo</h2>
+    <p class="omen-text" id="exo-text"></p>
+    <p class="count" id="exo-count" aria-live="assertive"></p>
+    <div class="pick" id="exo-pick" hidden></div>
+    <button class="btn plain" id="exo-cancel" type="button">Annulla, torniamo alla seduta</button>
+  </section>
+
+  <section class="screen" id="s-reveal" aria-live="polite">
+    <div class="candle-wrap" id="reveal-candle"><canvas id="cv-reveal" aria-hidden="true"></canvas></div>
+    <h2 class="omen-head" id="rev-head"></h2>
+    <p class="omen-text" id="rev-text"></p>
+    <button class="btn primary big wide push" id="rev-next" type="button">Continua la seduta</button>
+  </section>
+
+  <section class="screen" id="s-end" aria-labelledby="end-title">
+    <h2 class="end-title" id="end-title"></h2>
+    <p class="end-sub" id="end-sub"></p>
+    <div class="word-reveal" id="end-word"></div>
+    <p class="legend" id="end-legend"></p>
+    <div class="block">
+      <h3 style="text-align:left">Il verbale della seduta</h3>
+      <ol class="log" id="end-log"></ol>
+    </div>
+    <div class="stack">
+      <button class="btn primary big wide" id="again-btn" type="button">Nuova seduta</button>
+      <div class="two"><button class="btn" id="setup-btn" type="button">Cambia giocatori</button><button class="btn" id="menu-btn" type="button">Menu</button></div>
+    </div>
+  </section>
+
+</main>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/*__CONTENT__*/
+</script>
+<script>
+/*__APP__*/
+</script>
+</body>
+</html>
